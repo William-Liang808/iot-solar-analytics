@@ -1,43 +1,35 @@
-// src/components/MapPicker.tsx
 'use client'
 
-import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api'
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
+import MapPicker from '@/components/MapPicker'
+import SolarChart from '@/components/SolarChart'
 
-const containerStyle = {
-  width: '100%',
-  height: '400px',
+interface ForecastData {
+  ac_monthly: number[];
+  dc_monthly?: number[];
+  solrad_monthly?: number[];
+  poa_monthly?: number[];
+  ac_annual?: number;
+  solrad_annual?: number;
+  capacity_factor?: number;
 }
 
-const center = {
-  lat: 21.3069,
-  lng: -157.8583,
-}
+export default function Page() {
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
+  const [forecast, setForecast] = useState<ForecastData | null>(null)
 
-export default function MapPicker({ onSelect }: { onSelect: (coords: { lat: number; lng: number }) => void }) {
-  const { isLoaded } = useLoadScript({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
-  })
-  console.log(process.env.GOOGLE_MAPS_API_KEY)
-
-  const [marker, setMarker] = useState(center)
-
-  const handleClick = useCallback((e: google.maps.MapMouseEvent) => {
-    if (e.latLng) {
-      const coords = {
-        lat: e.latLng.lat(),
-        lng: e.latLng.lng(),
-      }
-      setMarker(coords)
-      onSelect(coords)
-    }
-  }, [onSelect])
-
-  if (!isLoaded) return <p>Loading map...</p>
+  const handleLocationSelect = async (coords: { lat: number; lng: number }) => {
+    setCoords(coords)
+    const res = await fetch(`/api/solar?lat=${coords.lat}&lon=${coords.lng}`)
+    const data = await res.json()
+    setForecast(data)
+  }
 
   return (
-    <GoogleMap mapContainerStyle={containerStyle} center={marker} zoom={10} onClick={handleClick}>
-      <Marker position={marker} />
-    </GoogleMap>
+    <main className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Solar Forecast {coords ? JSON.stringify(coords) : ""}</h1>
+      <MapPicker onSelect={handleLocationSelect} />
+      {forecast && <SolarChart data={forecast} />}
+    </main>
   )
 }

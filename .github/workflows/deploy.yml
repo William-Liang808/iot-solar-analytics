@@ -18,6 +18,11 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
+      - name: Create .env.production
+        run: |
+          echo "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}" >> .env.production
+          echo "NREL_API_KEY=${{ secrets.NREL_API_KEY }}" >> .env.production
+
       - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
         with:
