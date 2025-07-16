@@ -1,0 +1,10 @@
+# Keep these lines to ignore unnecessary files
+node_modules
+.next
+.env
+.env.local
+.git
+.gitignore
+
+# ✅ EXPLICITLY INCLUDE Dockerfile
+!Dockerfile
